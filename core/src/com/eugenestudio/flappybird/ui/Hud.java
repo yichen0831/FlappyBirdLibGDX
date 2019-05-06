@@ -2,7 +2,6 @@ package com.eugenestudio.flappybird.ui;
 
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Disposable;
@@ -14,7 +13,10 @@ public class Hud implements Disposable {
     private VisLabel distanceLabel;
     private VisLabel speedLabel;
     private VisLabel playTimeLabel;
+    private VisLabel tapsLabel;
     private Image pauseImage;
+    private Image getReadyImage;
+    private Image gameOverImage;
 
     public Hud(AssetManager assetManager) {
         stage = new Stage();
@@ -23,6 +25,18 @@ public class Hud implements Disposable {
         pauseImage.setPosition((1280f - 40f) / 2f, (720f - 40f) / 2f);
         pauseImage.setVisible(false);
         stage.addActor(pauseImage);
+
+        getReadyImage = new Image(assetManager.get("textures/GetReady.png", Texture.class));
+        getReadyImage.setSize(480f, 140f);
+        getReadyImage.setPosition((1280f - 480f) / 2f, (720f - 140f) / 2f);
+        getReadyImage.setVisible(false);
+        stage.addActor(getReadyImage);
+
+        gameOverImage = new Image(assetManager.get("textures/GameOver.png", Texture.class));
+        gameOverImage.setSize(500f, 140f);
+        gameOverImage.setPosition((1280f - 500f) / 2f, (720f - 140f) / 2f);
+        gameOverImage.setVisible(false);
+        stage.addActor(gameOverImage);
 
         distanceLabel = new VisLabel("Distance: 0");
         distanceLabel.setPosition(320f, 15f);
@@ -38,6 +52,11 @@ public class Hud implements Disposable {
         playTimeLabel.setPosition(720f, 15f);
         playTimeLabel.setColor(0.3f, 0.3f, 0.3f, 1f);
         stage.addActor(playTimeLabel);
+
+        tapsLabel = new VisLabel("Taps: 0");
+        tapsLabel.setPosition(1020f, 15f);
+        tapsLabel.setColor(0.3f, 0.3f, 0.3f, 1f);
+        stage.addActor(tapsLabel);
     }
 
     public void act(float deltaTime) {
@@ -60,8 +79,20 @@ public class Hud implements Disposable {
         playTimeLabel.setText(String.format("Time: %.2f", playTime));
     }
 
+    public void setTaps(int taps) {
+        tapsLabel.setText(String.format("Taps: %d", taps));
+    }
+
     public void setPause(boolean paused) {
         pauseImage.setVisible(paused);
+    }
+
+    public void setGetReadyImageVisible(boolean visible) {
+        getReadyImage.setVisible(visible);
+    }
+
+    public void setGameOverImageVisible(boolean visible) {
+        gameOverImage.setVisible(visible);
     }
 
     @Override

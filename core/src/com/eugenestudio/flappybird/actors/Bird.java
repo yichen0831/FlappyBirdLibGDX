@@ -80,10 +80,6 @@ public class Bird extends Entity {
                 collision.radius * 2f, collision.radius * 2f);
     }
 
-    public Rectangle getBoundingRectangle() {
-        return sprite.getBoundingRectangle();
-    }
-
     @Override
     public void update(float deltaTime) {
         if (alive) {
@@ -139,6 +135,7 @@ public class Bird extends Entity {
 
         yVelocity = flapForce;
         flapSound.play();
+        game.addTap();
     }
 
     public void hit() {

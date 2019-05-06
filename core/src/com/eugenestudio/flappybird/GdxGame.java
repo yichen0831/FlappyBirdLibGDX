@@ -9,6 +9,7 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
@@ -26,6 +27,14 @@ public class GdxGame extends ApplicationAdapter {
     private final float viewportWidth = 128f;
     private final float viewportHeight = 72f;
 
+    private enum State {
+        Ready,
+        Gaming,
+        GameOver
+    }
+
+    private State state;
+
     private SpriteBatch batch;
     private ShapeRenderer shapeRenderer;
     private OrthographicCamera camera;
@@ -40,14 +49,22 @@ public class GdxGame extends ApplicationAdapter {
 
     private AssetManager assetManager;
     private Sound pauseSound;
+    private Sound readySound;
+    private Sound goSound;
+    private Sound gameOverSound;
 
     private float distance;
     private float playTime;
+    private int taps;
 
     private boolean drawDebug;
     private boolean isGamePlaying;
     private boolean gameOver;
-    private float canRestartCountDown = 3f;
+    private float canRestartCountDown = 2f;
+    private float readyDelay = 1.5f;
+    private boolean isReadySoundPlayed;
+    private boolean isGoSoundPlayed;
+    private boolean isGameOverSoundPlayed;
 
     public float getBirdSpeed() {
         return birdSpeed;
@@ -74,7 +91,10 @@ public class GdxGame extends ApplicationAdapter {
 
         assetManager = new AssetManager();
         loadAssets(assetManager);
+        createSounds();
         createEntities();
+
+        state = State.Ready;
         pipeSystem = new PipeSystem(this);
 
         VisUI.load(VisUI.SkinScale.X2);
@@ -93,14 +113,24 @@ public class GdxGame extends ApplicationAdapter {
         assetManager.load("textures/PipeTop.png", Texture.class, textureParameter);
         assetManager.load("textures/PipeBottom.png", Texture.class, textureParameter);
         assetManager.load("textures/Pause.png", Texture.class, textureParameter);
+        assetManager.load("textures/GetReady.png", Texture.class, textureParameter);
+        assetManager.load("textures/GameOver.png", Texture.class, textureParameter);
 
         assetManager.load("sounds/sfx_wing.ogg", Sound.class);
         assetManager.load("sounds/sfx_die.ogg", Sound.class);
         assetManager.load("sounds/sfx_hit.ogg", Sound.class);
         assetManager.load("sounds/Pause.ogg", Sound.class);
+        assetManager.load("sounds/ready.ogg", Sound.class);
+        assetManager.load("sounds/go.ogg", Sound.class);
+        assetManager.load("sounds/game_over.ogg", Sound.class);
         assetManager.finishLoading();
+    }
 
+    private void createSounds() {
         pauseSound = assetManager.get("sounds/Pause.ogg");
+        readySound = assetManager.get("sounds/ready.ogg");
+        goSound = assetManager.get("sounds/go.ogg");
+        gameOverSound = assetManager.get("sounds/game_over.ogg");
     }
 
     private void createEntities() {
@@ -128,6 +158,7 @@ public class GdxGame extends ApplicationAdapter {
 
         Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         for (Background background : backgroundList) {
@@ -169,6 +200,37 @@ public class GdxGame extends ApplicationAdapter {
         hud.act(deltaTime);
         handleInput();
 
+        switch (state) {
+            case Ready:
+                readyDelay -= deltaTime;
+                if (readyDelay <= 0f) {
+                    state = State.Gaming;
+                    isGamePlaying = true;
+                    hud.setGetReadyImageVisible(false);
+                } else if (readyDelay < 0.5f) {
+                    if (!isGoSoundPlayed) {
+                        isGoSoundPlayed = true;
+                        goSound.play();
+                    }
+                } else if (!isReadySoundPlayed) {
+                    isReadySoundPlayed = true;
+                    readySound.play();
+                    hud.setGetReadyImageVisible(true);
+                }
+                break;
+            case Gaming:
+                break;
+            case GameOver:
+                if (canRestart()) {
+                    if (!isGameOverSoundPlayed) {
+                        isGameOverSoundPlayed = true;
+                        gameOverSound.play();
+                    }
+                    hud.setGameOverImageVisible(true);
+                }
+                break;
+        }
+
         if (!isGamePlaying) {
             return;
         }
@@ -206,14 +268,19 @@ public class GdxGame extends ApplicationAdapter {
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
-            if (gameOver) {
-                if (canRestart()){
-                    restart();
-                }
-            } else {
-                isGamePlaying = !isGamePlaying;
-                hud.setPause(!isGamePlaying);
-                pauseSound.play();
+            switch (state) {
+                case Ready:
+                    break;
+                case Gaming:
+                    isGamePlaying = !isGamePlaying;
+                    hud.setPause(!isGamePlaying);
+                    pauseSound.play();
+                    break;
+                case GameOver:
+                    if (canRestart()) {
+                        restart();
+                    }
+                    break;
             }
         }
 
@@ -249,19 +316,36 @@ public class GdxGame extends ApplicationAdapter {
 
     public void setGameOver() {
         gameOver = true;
+        state = State.GameOver;
         setBirdSpeed(0f);
     }
 
     private void restart() {
         gameOver = false;
         isGamePlaying = false;
-        canRestartCountDown = 3f;
+        canRestartCountDown = 2f;
+        readyDelay = 1.5f;
+        isReadySoundPlayed = false;
+        isGoSoundPlayed = false;
+        isGameOverSoundPlayed = false;
+
+        taps = 0;
         distance = 0f;
         playTime = 0f;
         pipeSystem.reset();
         bird.reset();
         bird.setPosition(20f, 48f);
         setBirdSpeed(20f);
+        state = State.Ready;
+        hud.setGameOverImageVisible(false);
+        hud.setPause(false);
+        hud.setDistance(distance);
+        hud.setPlayTime(playTime);
+    }
+
+    public void addTap() {
+        taps++;
+        hud.setTaps(taps);
     }
 
     @Override
