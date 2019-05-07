@@ -12,7 +12,7 @@ public class Background extends Entity {
     public Background(GdxGame game, Texture texture) {
         this.game = game;
         sprite = new Sprite(texture);
-        sprite.setSize(40.5f,72f);
+        sprite.setSize(40.5f, 72f);
     }
 
     public void setPosition(float x, float y) {
@@ -25,7 +25,7 @@ public class Background extends Entity {
 
     @Override
     public void update(float deltaTime) {
-        sprite.translateX(-game.getBirdSpeed() * deltaTime);
+        sprite.translateX(-game.getBirdSpeed() / 2f * deltaTime);
 
         if (sprite.getX() < -sprite.getWidth()) {
             sprite.setX(sprite.getX() + sprite.getWidth() * 5);

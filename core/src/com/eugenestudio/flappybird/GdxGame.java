@@ -341,6 +341,7 @@ public class GdxGame extends ApplicationAdapter {
         hud.setPause(false);
         hud.setDistance(distance);
         hud.setPlayTime(playTime);
+        hud.setTaps(taps);
     }
 
     public void addTap() {
