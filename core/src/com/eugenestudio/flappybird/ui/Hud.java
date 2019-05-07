@@ -1,6 +1,7 @@
 package com.eugenestudio.flappybird.ui;
 
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -38,24 +39,26 @@ public class Hud implements Disposable {
         gameOverImage.setVisible(false);
         stage.addActor(gameOverImage);
 
+        Color fontColor = new Color(0.4f, 0.5f, 0.36f, 1f);
+
         distanceLabel = new VisLabel("Distance: 0");
         distanceLabel.setPosition(320f, 15f);
-        distanceLabel.setColor(0.3f, 0.3f, 0.3f, 1f);
+        distanceLabel.setColor(fontColor);
         stage.addActor(distanceLabel);
 
         speedLabel = new VisLabel("Speed: 0");
         speedLabel.setPosition(20f, 15f);
-        speedLabel.setColor(0.3f, 0.3f, 0.3f, 1f);
+        speedLabel.setColor(fontColor);
         stage.addActor(speedLabel);
 
         playTimeLabel = new VisLabel("Time: 0");
         playTimeLabel.setPosition(720f, 15f);
-        playTimeLabel.setColor(0.3f, 0.3f, 0.3f, 1f);
+        playTimeLabel.setColor(fontColor);
         stage.addActor(playTimeLabel);
 
         tapsLabel = new VisLabel("Taps: 0");
         tapsLabel.setPosition(1020f, 15f);
-        tapsLabel.setColor(0.3f, 0.3f, 0.3f, 1f);
+        tapsLabel.setColor(fontColor);
         stage.addActor(tapsLabel);
     }
 

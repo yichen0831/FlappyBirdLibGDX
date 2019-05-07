@@ -25,7 +25,7 @@ public class Background extends Entity {
 
     @Override
     public void update(float deltaTime) {
-        sprite.translateX(-game.getBirdSpeed() / 2f * deltaTime);
+        sprite.translateX(-game.getBirdSpeed() / 3f * deltaTime);
 
         if (sprite.getX() < -sprite.getWidth()) {
             sprite.setX(sprite.getX() + sprite.getWidth() * 5);
