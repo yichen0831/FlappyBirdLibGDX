@@ -16,6 +16,7 @@ import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.eugenestudio.flappybird.actors.*;
+import com.eugenestudio.flappybird.systems.EffectSystem;
 import com.eugenestudio.flappybird.systems.PipeSystem;
 import com.eugenestudio.flappybird.ui.Hud;
 import com.kotcrab.vis.ui.VisUI;
@@ -76,6 +77,13 @@ public class GdxGame extends ApplicationAdapter {
     private final float birdSpeedStep = 5f;
 
     private PipeSystem pipeSystem;
+
+    public EffectSystem getEffectSystem() {
+        return effectSystem;
+    }
+
+    private EffectSystem effectSystem;
+
     private List<Background> backgroundList;
     private List<Ground> groundList;
 
@@ -91,15 +99,16 @@ public class GdxGame extends ApplicationAdapter {
 
         assetManager = new AssetManager();
         loadAssets(assetManager);
+
+        pipeSystem = new PipeSystem(this);
+        effectSystem = new EffectSystem(this);
         createSounds();
         createEntities();
-
-        state = State.Ready;
-        pipeSystem = new PipeSystem(this);
 
         VisUI.load(VisUI.SkinScale.X2);
         hud = new Hud(assetManager);
 
+        state = State.Ready;
         setBirdSpeed(20f);
     }
 
@@ -115,6 +124,8 @@ public class GdxGame extends ApplicationAdapter {
         assetManager.load("textures/Pause.png", Texture.class, textureParameter);
         assetManager.load("textures/GetReady.png", Texture.class, textureParameter);
         assetManager.load("textures/GameOver.png", Texture.class, textureParameter);
+        assetManager.load("textures/effect_circle.png", Texture.class, textureParameter);
+        assetManager.load("textures/grumpy_bubble.png", Texture.class, textureParameter);
 
         assetManager.load("sounds/sfx_wing.ogg", Sound.class);
         assetManager.load("sounds/sfx_die.ogg", Sound.class);
@@ -170,6 +181,8 @@ public class GdxGame extends ApplicationAdapter {
         for (Ground ground : groundList) {
             ground.draw(batch);
         }
+
+        effectSystem.draw(batch);
 
         bird.draw(batch);
         batch.end();
@@ -240,6 +253,7 @@ public class GdxGame extends ApplicationAdapter {
         }
 
         pipeSystem.update(deltaTime);
+        effectSystem.update(deltaTime);
 
         for (Ground ground : groundList) {
             ground.update(deltaTime);

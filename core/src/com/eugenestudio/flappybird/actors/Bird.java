@@ -11,9 +11,11 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Rectangle;
 import com.eugenestudio.flappybird.GdxGame;
+import com.eugenestudio.flappybird.systems.EffectSystem;
 
 public class Bird extends Entity {
     private GdxGame game;
+    private EffectSystem effectSystem;
     private Sound flapSound;
     private Sound dieSound;
     private Sound hitSound;
@@ -29,14 +31,6 @@ public class Bird extends Entity {
 
     private float yVelocity;
 
-    public boolean isAlive() {
-        return alive;
-    }
-
-    public void setAlive(boolean alive) {
-        this.alive = alive;
-    }
-
     private boolean alive;
     private float deadElapsedTime;
     private boolean isDeadSoundPlayed;
@@ -48,6 +42,7 @@ public class Bird extends Entity {
 
     public Bird(GdxGame game) {
         this.game = game;
+        effectSystem = game.getEffectSystem();
         AssetManager assetManager = game.getAssetManager();
         Texture texture = assetManager.get("textures/BirdY.png");
         textureRegions = new TextureRegion[3];
@@ -109,10 +104,16 @@ public class Bird extends Entity {
             }
 
         } else {
-            rotation += 120f * deltaTime;
             deadElapsedTime += deltaTime;
 
-            if (deadElapsedTime >= 0.3f && !isDeadSoundPlayed) {
+            if (deadElapsedTime <= 1.2f) {
+                yVelocity = 0f;
+            }
+            else {
+                rotation += 120f * deltaTime;
+            }
+            
+            if (deadElapsedTime >= 1.5f && !isDeadSoundPlayed) {
                 isDeadSoundPlayed = true;
                 dieSound.play();
             }
@@ -136,6 +137,7 @@ public class Bird extends Entity {
         yVelocity = flapForce;
         flapSound.play();
         game.addTap();
+        effectSystem.addFlapEffect(sprite.getX(), sprite.getY());
     }
 
     public void hit() {
@@ -143,6 +145,7 @@ public class Bird extends Entity {
         yVelocity = 0f;
         alive = false;
         game.setGameOver();
+        effectSystem.addDeathEffect(sprite.getX() + 2.4f, sprite.getY() + 1.2f);
     }
 
     public void reset() {
