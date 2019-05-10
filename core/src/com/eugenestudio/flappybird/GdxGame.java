@@ -298,7 +298,7 @@ public class GdxGame extends ApplicationAdapter {
             }
         }
 
-        if (isGamePlaying) {
+        if (isGamePlaying && !gameOver) {
             if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
                 decreaseBirdSpeed();
             }
