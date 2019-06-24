@@ -87,6 +87,8 @@ public class GdxGame extends ApplicationAdapter {
     private List<Background> backgroundList;
     private List<Ground> groundList;
 
+    private boolean assetsLoaded;
+
     @Override
     public void create() {
         batch = new SpriteBatch();
@@ -100,16 +102,6 @@ public class GdxGame extends ApplicationAdapter {
         assetManager = new AssetManager();
         loadAssets(assetManager);
 
-        pipeSystem = new PipeSystem(this);
-        effectSystem = new EffectSystem(this);
-        createSounds();
-        createEntities();
-
-        VisUI.load(VisUI.SkinScale.X2);
-        hud = new Hud(assetManager);
-
-        state = State.Ready;
-        setBirdSpeed(20f);
     }
 
     private void loadAssets(AssetManager assetManager) {
@@ -134,7 +126,19 @@ public class GdxGame extends ApplicationAdapter {
         assetManager.load("sounds/ready.ogg", Sound.class);
         assetManager.load("sounds/go.ogg", Sound.class);
         assetManager.load("sounds/game_over.ogg", Sound.class);
-        assetManager.finishLoading();
+    }
+
+    private void init() {
+        pipeSystem = new PipeSystem(this);
+        effectSystem = new EffectSystem(this);
+        createSounds();
+        createEntities();
+
+        VisUI.load(VisUI.SkinScale.X2);
+        hud = new Hud(assetManager);
+
+        state = State.Ready;
+        setBirdSpeed(20f);
     }
 
     private void createSounds() {
@@ -165,6 +169,14 @@ public class GdxGame extends ApplicationAdapter {
 
     @Override
     public void render() {
+        if (!assetsLoaded) {
+            assetsLoaded = assetManager.update();
+            if (assetsLoaded) {
+                init();
+            }
+            return;
+        }
+
         update(Gdx.graphics.getDeltaTime());
 
         Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
